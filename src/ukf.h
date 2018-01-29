@@ -130,6 +130,11 @@ private:
    */
   void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zsig_out);
 
+  /*
+   * Predict LASER (lidar) measurement state mean and covariance
+   */
+  void PredictLaserMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zsig_out);
+
 };
 
 #endif /* UKF_H */
