@@ -105,11 +105,30 @@ public:
   void UpdateRadar(MeasurementPackage meas_package);
 
 private:
-  Tools tools;
-
+  /*
+   * Generate augmented sigma points
+   */
   void AugmentedSigmaPoints(MatrixXd* Xsig_out);
+
+  /*
+   * Predict sigma points
+   */
   void SigmaPointPrediction(double delta_t);
+
+  /*
+   * Predict state mean and covariance matrix
+   */
   void PredictMeanAndCovariance(void);
+
+  /*
+   * Predict LASER measurement state mean and covariance
+   */
+  void PredictLaserMeasurement(VectorXd* z_out, MatrixXd* S_out);
+
+  /*
+   * Predict RADAR measurement state mean and covariance
+   */
+  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zsig_out);
 
 };
 
