@@ -115,18 +115,25 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // first measurement
     cout << "UKF: " << endl;
 
+    /*
+     * init px and py, the rest set to zero
+    */
+    float px = 0.;
+    float py = 0.;
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
-      /**
-      Convert radar from polar to cartesian coordinates and initialize state.
-      */
-      //x_ = tools.PolarToCartesian(meas_package.raw_measurements_);
+      float rho = meas_package.raw_measurements_[0];
+      float theta = meas_package.raw_measurements_[1];
+
+      px = rho * cos(theta);
+      py = rho * sin(theta);
+
     }
     else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
-      /**
-      Initialize state.
-      */
-      x_ << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], 0, 0, 0;
+      px = meas_package.raw_measurements_[0];
+      py = meas_package.raw_measurements_[1];
     }
+    // Init process state
+    x_ << px, py, 0., 0., 0.;
 
     // update timestamp in microseconds
     time_us_ = meas_package.timestamp_;
@@ -421,7 +428,7 @@ void UKF::PredictMeanAndCovariance(void) {
   int n_a = 2 * n_aug_ + 1;
 
   //predict state mean
-  x_.fill(0.0);
+  x_.fill(0.);
   for(int i = 0; i < n_x_; i++)  {
     VectorXd Xsig = Xsig_pred_.row(i);
     for (int j = 0; j < n_a; j++)   {
@@ -430,9 +437,12 @@ void UKF::PredictMeanAndCovariance(void) {
   }
 
   //predict state covariance matrix
-  P_.fill(0.0);
+  P_.fill(0.);
   for (int i = 0; i < n_a; i++) {
     VectorXd dx = Xsig_pred_.col(i) - x_;
+    //angle normalization
+    while (dx(3)> M_PI) dx(3) -= 2. * M_PI;
+    while (dx(3)<-M_PI) dx(3) += 2. * M_PI;
     P_ += weights_(i) * dx * dx.transpose();
   }
 
