@@ -68,6 +68,11 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  // Lidar NIS
+  double NIS_lidar_;
+
+  // Radar NIS
+  double NIS_radar_;
 
   /**
    * Constructor
@@ -105,6 +110,16 @@ public:
   void UpdateRadar(MeasurementPackage meas_package);
 
 private:
+  /*
+   * Radar measurement noise covariance matrix
+   */
+  MatrixXd R_radar_;
+
+  /*
+   * Lidar measurement noise covariance matrix
+   */
+  MatrixXd R_laser_;
+
   /*
    * Generate augmented sigma points
    */
