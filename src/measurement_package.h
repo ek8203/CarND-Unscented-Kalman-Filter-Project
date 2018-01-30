@@ -3,6 +3,16 @@
 
 #include "Eigen/Dense"
 
+/*
+ *  Radar measurement dimension, radar can measure r, phi, and r_dot
+ */
+#define N_Z_RADAR  3
+
+/*
+ *  Laser measurement dimension, radar can measure px and py
+ */
+#define N_Z_LASER  2
+
 class MeasurementPackage {
 public:
   long timestamp_;
