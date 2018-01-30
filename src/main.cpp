@@ -4,6 +4,7 @@
 #include <math.h>
 #include "ukf.h"
 #include "tools.h"
+#include <fstream>
 
 using namespace std;
 
@@ -38,7 +39,18 @@ int main()
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  // Save results in a file
+  ofstream fout;
+  const string  fname = "../data/ukf_output.txt";
+
+  fout.open(fname);
+
+  if (!fout.is_open()) {
+    cout << "Unable to open output file " << fname << endl;
+    return -1;
+  }
+
+  h.onMessage([&ukf,&tools,&estimations,&ground_truth, &fout](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -60,13 +72,13 @@ int main()
           
           MeasurementPackage meas_package;
           istringstream iss(sensor_measurment);
-    	  long long timestamp;
+          long long timestamp;
 
-    	  // reads first element from the current line
-    	  string sensor_type;
-    	  iss >> sensor_type;
+          // reads first element from the current line
+          string sensor_type;
+          iss >> sensor_type;
 
-    	  if (sensor_type.compare("L") == 0) {
+          if (sensor_type.compare("L") == 0) {
       	  		meas_package.sensor_type_ = MeasurementPackage::LASER;
           		meas_package.raw_measurements_ = VectorXd(2);
           		float px;
@@ -90,44 +102,75 @@ int main()
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
           }
+
           float x_gt;
-    	  float y_gt;
-    	  float vx_gt;
-    	  float vy_gt;
-    	  iss >> x_gt;
-    	  iss >> y_gt;
-    	  iss >> vx_gt;
-    	  iss >> vy_gt;
-    	  VectorXd gt_values(4);
-    	  gt_values(0) = x_gt;
-    	  gt_values(1) = y_gt; 
-    	  gt_values(2) = vx_gt;
-    	  gt_values(3) = vy_gt;
-    	  ground_truth.push_back(gt_values);
+          float y_gt;
+          float vx_gt;
+          float vy_gt;
+          iss >> x_gt;
+          iss >> y_gt;
+          iss >> vx_gt;
+          iss >> vy_gt;
+          VectorXd gt_values(4);
+          gt_values(0) = x_gt;
+          gt_values(1) = y_gt;
+          gt_values(2) = vx_gt;
+          gt_values(3) = vy_gt;
+          ground_truth.push_back(gt_values);
           
           //Call ProcessMeasurment(meas_package) for Kalman filter
-    	  ukf.ProcessMeasurement(meas_package);    	  
+          ukf.ProcessMeasurement(meas_package);
 
-    	  //Push the current estimated x,y positon from the Kalman filter's state vector
+          //Push the current estimated x,y positon from the Kalman filter's state vector
 
-    	  VectorXd estimate(4);
+          VectorXd estimate(4);
 
-    	  double p_x = ukf.x_(0);
-    	  double p_y = ukf.x_(1);
-    	  double v  = ukf.x_(2);
-    	  double yaw = ukf.x_(3);
+          double p_x = ukf.x_(0);
+          double p_y = ukf.x_(1);
+          double v  = ukf.x_(2);
+          double yaw = ukf.x_(3);
 
-    	  double v1 = cos(yaw)*v;
-    	  double v2 = sin(yaw)*v;
+          double v1 = cos(yaw)*v;
+          double v2 = sin(yaw)*v;
 
-    	  estimate(0) = p_x;
-    	  estimate(1) = p_y;
-    	  estimate(2) = v1;
-    	  estimate(3) = v2;
+          // save results
+          // Output file format: est_px est_py est_vx est_vy meas_px meas_py gt_px gt_py gt_vx gt_vy
+          // est_px est_py est_vx est_vy
+          //fout << p_x << "\t" << p_y << "\t" << v1 <<"\t" << v2 << "\t";
+
+          // meas_px meas_py
+          float meas_px,
+                meas_py;
+          if (sensor_type.compare("L") == 0) {
+            meas_px = meas_package.raw_measurements_[0];
+            meas_py = meas_package.raw_measurements_[1];
+          }
+          else if (sensor_type.compare("R") == 0) {
+            meas_px = meas_package.raw_measurements_[0] * cos(meas_package.raw_measurements_[1]);
+            meas_py = meas_package.raw_measurements_[0] * sin(meas_package.raw_measurements_[1]);
+          }
+          //fout << meas_px << "\t"<< meas_py << "\t";
+
+          // gt_px gt_py gt_vx gt_vy
+          //fout << x_gt << "\t" << y_gt << "\t" << vx_gt << "\t" << vy_gt << "\t";
+
+          estimate(0) = p_x;
+          estimate(1) = p_y;
+          estimate(2) = v1;
+          estimate(3) = v2;
     	  
-    	  estimations.push_back(estimate);
+          estimations.push_back(estimate);
 
-    	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          cout << "Accuracy - RMSE:" << endl << RMSE << endl;
+
+          // RMSE(0) RMSE(1) RMSE(2) RMSE(3)
+          fout << RMSE(0) << "\t" << RMSE(1) << "\t" << RMSE(2) << "\t" << RMSE(3) << "\t";
+
+          // NIS_lidar NIS_radar
+          fout << ukf.NIS_lidar_ << "\t" << ukf.NIS_radar_ << endl;
+          cout << "Lidar NIS: " << ukf.NIS_lidar_ << endl;
+          cout << "Radar NIS: " << ukf.NIS_radar_ << endl;
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
@@ -182,9 +225,13 @@ int main()
   else
   {
     std::cerr << "Failed to listen to port" << std::endl;
+    fout.close();
     return -1;
   }
   h.run();
+
+  fout.close();
+  cout <<"Results saved in file " << fname << endl;
 }
 
 
