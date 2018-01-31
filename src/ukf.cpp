@@ -60,11 +60,6 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
-  P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
-        0, std_laspy_*std_laspy_, 0, 0, 0,
-        0, 0, std_radr_*std_radr_, 0, 0,
-        0, 0, 0, std_radphi_*std_radphi_, 0,
-        0, 0, 0, 0, std_radrd_*std_radrd_;
 
   // Initially not initialized
   is_initialized_ = false;
@@ -469,7 +464,6 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   //create augmented mean state
   x_aug.fill(0);
   x_aug.head(n_x_) = x_;
-  //std::cout << "x_aug  = " << x_aug << std::endl;
 
   //create augmented covariance matrix
   // P_aug = | P 0 |
@@ -488,6 +482,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
 
   //create augmented sigma points
   //set first column of sigma point matrix
+  Xsig_aug.fill(0);
   Xsig_aug.col(0)  = x_aug;
 
   //set remaining sigma points
@@ -549,7 +544,7 @@ void UKF::SigmaPointPrediction(double delta_t) {
   //predict sigma points
   //avoid division by zero
   //write predicted sigma points into right column
-
+  Xsig_pred_.fill(0);
   for (int k = 0; k < 2* n_aug_ + 1; k++) {
 
     // Inputs
@@ -660,7 +655,7 @@ void UKF::PredictMeanAndCovariance(void) {
   int n_a = 2 * n_aug_ + 1;
 
   //predict state mean
-  x_.fill(0.);
+  x_.fill(0);
   for(int i = 0; i < n_x_; i++)  {
     VectorXd Xsig = Xsig_pred_.row(i);
     for (int j = 0; j < n_a; j++)   {
@@ -669,7 +664,7 @@ void UKF::PredictMeanAndCovariance(void) {
   }
 
   //predict state covariance matrix
-  P_.fill(0.);
+  P_.fill(0);
   for (int i = 0; i < n_a; i++) {
     VectorXd dx = Xsig_pred_.col(i) - x_;
     //angle normalization
@@ -724,9 +719,6 @@ void UKF::PredictMeanAndCovariance(void) {
 
 void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zsig_out) {
 
-  //set measurement dimension, radar can measure r, phi, and r_dot
-  int n_z = N_Z_RADAR;
-
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(N_Z_RADAR, 2 * n_aug_ + 1);
 
@@ -741,6 +733,7 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zs
  ******************************************************************************/
 
   //transform sigma points into measurement space
+  Zsig.fill(0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     float px = Xsig_pred_(0,i);
     float py = Xsig_pred_(1,i);
@@ -859,6 +852,7 @@ void UKF::PredictLaserMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zs
  ******************************************************************************/
 
   //transform sigma points into measurement space
+  Zsig.fill(0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     float px = Xsig_pred_(0,i);
     float py = Xsig_pred_(1,i);
@@ -945,4 +939,7 @@ void UKF::PredictLaserMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zs
   *S_out = S;
   *Zsig_out = Zsig;
 }
+
+
+
 
