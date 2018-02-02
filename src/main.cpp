@@ -36,15 +36,9 @@ int main(int argc, const char * argv[])
   UKF ukf;
 
   // Get command string parameters
-  if (argc > 1)
-  {
+  if(argc > 1) {
     try {
-      if(stoi(argv[1]) > 0) {
-        ukf.use_laser_ = true;
-      }
-      else  {
-        ukf.use_laser_ = false;
-      }
+      ukf.std_a_ = stof(argv[1]);
     } catch (...)  {
       cout << "p1" << endl;
       return -1;
@@ -53,21 +47,23 @@ int main(int argc, const char * argv[])
 
   if(argc > 2) {
     try {
-      if(stoi(argv[2]) > 0) {
-        ukf.use_radar_ = true;
-      }
-      else  {
-        ukf.use_radar_ = false;
-      }
+      ukf.std_yawdd_ = stof(argv[2]);
     } catch (...)  {
       cout << "p2" << endl;
       return -1;
     }
   }
 
-  if(argc > 3) {
+
+  if (argc > 3)
+  {
     try {
-      ukf.std_a_ = stof(argv[3]);
+      if(stoi(argv[3]) > 0) {
+        ukf.use_laser_ = true;
+      }
+      else  {
+        ukf.use_laser_ = false;
+      }
     } catch (...)  {
       cout << "p3" << endl;
       return -1;
@@ -76,17 +72,22 @@ int main(int argc, const char * argv[])
 
   if(argc > 4) {
     try {
-      ukf.std_yawdd_ = stof(argv[4]);
+      if(stoi(argv[4]) > 0) {
+        ukf.use_radar_ = true;
+      }
+      else  {
+        ukf.use_radar_ = false;
+      }
     } catch (...)  {
-      cout << "p3" << endl;
+      cout << "p4" << endl;
       return -1;
     }
   }
 
-  cout << "use_laser=" << ukf.use_laser_ << endl;
-  cout << "use_radar=" << ukf.use_radar_ << endl;
   cout << "std_a=" << ukf.std_a_ << endl;
   cout << "std_yawdd=" << ukf.std_yawdd_ << endl;
+  cout << "use_laser=" << ukf.use_laser_ << endl;
+  cout << "use_radar=" << ukf.use_radar_ << endl;
 
   // used to compute the RMSE later
   Tools tools;
