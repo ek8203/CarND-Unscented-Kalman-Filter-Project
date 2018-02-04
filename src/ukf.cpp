@@ -731,28 +731,25 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zs
 /*******************************************************************************
  * Student part begin
  ******************************************************************************/
-
   //transform sigma points into measurement space
   Zsig.fill(0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
-    float px = Xsig_pred_(0,i);
-    float py = Xsig_pred_(1,i);
-    float v = Xsig_pred_(2,i);
-    float yaw = Xsig_pred_(3,i);
-    //float yawd = Xsig_pred(4,i);
+    double px  = Xsig_pred_(0,i);
+    double py  = Xsig_pred_(1,i);
+    double v   = Xsig_pred_(2,i);
+    double yaw = Xsig_pred_(3,i);
 
-    float rho = sqrt(px*px + py*py);
+    // divide by zero check
+    if (px < 0.0001) px += 0.0001;
+//    if (px < 0.0001) px = 0.0001;
 
-    // devide by zero check
-    if (px < 0.001) px = 0.001;
-    if (rho < 0.001) rho = 0.001;
+    double theta = atan2(py, px);
 
-    float theta = atan2(py, px);
-    float rho_dot = (px*cos(yaw)*v + py*sin(yaw)*v) / rho;
+    double rho = sqrt(px*px + py*py);
+    double rho_dot = (px*cos(yaw)*v + py*sin(yaw)*v) / rho;
 
     Zsig.col(i) << rho, theta, rho_dot;
   }
-
 
   //calculate mean predicted measurement
   z_pred.fill(0);
