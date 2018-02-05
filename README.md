@@ -35,9 +35,11 @@ The project code was built and executed on a Linux VMware guest.
 
 1. Make a build directory: `mkdir build && cd build`
 2. Compile the code: `cmake ../src/ && make` (Please note that `CMakeList.txt` file is located in folder `src/`)
-3. Run the code: `./ExtendedKF`
+3. Run the code: `./UnscentedKF`
 
 ### Project results
+
+The process noise parameters were adjusted as follows: `std_a_ = 2.0`, `std_yawdd_ = 0.5`.
 
 The source file [main.cpp](src/main.cpp) was modified to store the output data records in a text file [ukf_output.txt](data/ukf_output.txt) in the following format:
 `est_px est_py est_vx est_vy meas_px meas_py gt_px gt_py gt_vx gt_vy RMSE(0) RMSE(1) RMSE(2) RMSE(3) NIS_laser NIS_radar`
