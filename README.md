@@ -40,20 +40,18 @@ The project code was built and executed on a Linux VMware guest.
 ### Project results
 
 The source file [main.cpp](src/main.cpp) was modified to store the output data records in a text file [ukf_output.txt](data/ukf_output.txt) in the following format:
-`est_px est_py est_vx est_vy meas_px meas_py gt_px gt_py gt_vx gt_vy RMSE(0) RMSE(1) RMSE(2) RMSE(3)`
+`est_px est_py est_vx est_vy meas_px meas_py gt_px gt_py gt_vx gt_vy RMSE(0) RMSE(1) RMSE(2) RMSE(3) NIS_laser NIS_radar`
 
 After processing the output file in the [ukf-visualization.ipynb](data/ukf-visualization.ipynb) notebook the object position estimates look as following:
-![ukf_estimate.png](data/ukf_estimate.png)
+![UKF_estimate.png](data/UKF_estimate.png)
 
 The below table shows the position and velocity acccuracy of the last 10 estimates:
 ![ukf_rmse.png](data/ukf_rmse.png)
 
-The uncertainty of the filter estimated by calculated NIS values is shown in the below plots for laser
+The uncertainty of the filter estimated by calculated NIS values is shown in the below plots for laser and radar correspondently
 ![NIS_laser.png](data/NIS_laser.png)
-and the radar
 ![NIS_radar.png](data/NIS_radar.png)
-correspondently.
 
 ### Issues
 
-When executed on Linux VM, an error `"Segmentation fault (core dumped)"` is reported after `h.onDisconnection()` call.
+An error `"Segmentation fault (core dumped)"` is reported after `h.onDisconnection()` call.
