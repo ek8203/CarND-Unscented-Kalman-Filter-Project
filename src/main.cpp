@@ -191,7 +191,7 @@ int main(int argc, const char * argv[])
           // save results
           // Output file format: est_px est_py est_vx est_vy meas_px meas_py gt_px gt_py gt_vx gt_vy
           // est_px est_py est_vx est_vy
-          //fout << p_x << "\t" << p_y << "\t" << v1 <<"\t" << v2 << "\t";
+          fout << p_x << "\t" << p_y << "\t" << v1 <<"\t" << v2 << "\t";
 
           // meas_px meas_py
           float meas_px,
@@ -204,10 +204,10 @@ int main(int argc, const char * argv[])
             meas_px = meas_package.raw_measurements_[0] * cos(meas_package.raw_measurements_[1]);
             meas_py = meas_package.raw_measurements_[0] * sin(meas_package.raw_measurements_[1]);
           }
-          //fout << meas_px << "\t"<< meas_py << "\t";
+          fout << meas_px << "\t"<< meas_py << "\t";
 
           // gt_px gt_py gt_vx gt_vy
-          //fout << x_gt << "\t" << y_gt << "\t" << vx_gt << "\t" << vy_gt << "\t";
+          fout << x_gt << "\t" << y_gt << "\t" << vx_gt << "\t" << vy_gt << "\t";
 
           estimate(0) = p_x;
           estimate(1) = p_y;
