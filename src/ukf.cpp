@@ -34,7 +34,7 @@ UKF::UKF() {
   std_a_ = 2.;//30;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.2; //30;
+  std_yawdd_ = 0.5; //30;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -152,6 +152,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
     // Init process state
     x_ << px, py, 0., 0., 0.;
+    //x_ << px, py, 0.5, 0., 0.;
 
     // update timestamp in microseconds
     time_us_ = meas_package.timestamp_;
@@ -739,13 +740,12 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Zs
     double v   = Xsig_pred_(2,i);
     double yaw = Xsig_pred_(3,i);
 
-    // divide by zero check
-    if (px < 0.0001) px += 0.0001;
-//    if (px < 0.0001) px = 0.0001;
-
     double theta = atan2(py, px);
 
-    double rho = sqrt(px*px + py*py);
+    double temp = sqrt(px*px + py*py);
+    // divide by zero check
+    if (temp < 0.0001) temp = 0.0001;
+    double rho = temp;
     double rho_dot = (px*cos(yaw)*v + py*sin(yaw)*v) / rho;
 
     Zsig.col(i) << rho, theta, rho_dot;
